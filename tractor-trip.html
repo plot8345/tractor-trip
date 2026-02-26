@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tractor Trip</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0f2b4e;
+    --blue: #1a4a7a;
+    --accent: #f59e0b;
+    --accent2: #3b82f6;
+    --green: #10b981;
+    --red: #ef4444;
+    --bg: #f0f4fa;
+    --card: #ffffff;
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: #d1dbe8;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+  /* HEADER */
+  header {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--blue) 100%);
+    color:#fff; padding:0 24px;
+    display:flex; align-items:center; justify-content:space-between;
+    box-shadow:0 4px 20px rgba(15,43,78,0.35);
+    position:sticky; top:0; z-index:100;
+  }
+  .logo { display:flex; align-items:center; gap:12px; padding:14px 0; }
+  .logo-icon { font-size:32px; }
+  .logo h1 { font-family:'Baloo 2',sans-serif; font-size:24px; font-weight:800; letter-spacing:0.5px; }
+  .logo span { font-size:11px; opacity:0.7; display:block; margin-top:-4px; }
+  nav { display:flex; gap:4px; }
+  nav button {
+    background:transparent; border:none; color:rgba(255,255,255,0.75);
+    font-family:'Nunito',sans-serif; font-size:14px; font-weight:600;
+    padding:8px 16px; border-radius:8px; cursor:pointer; transition:all 0.2s;
+  }
+  nav button:hover { background:rgba(255,255,255,0.12); color:#fff; }
+  nav button.active { background:var(--accent); color:var(--navy); }
+
+  /* MAIN */
+  main { max-width:1100px; margin:0 auto; padding:28px 20px; }
+
+  /* PAGE */
+  .page { display:none; }
+  .page.active { display:block; }
+
+  /* SECTION TITLE */
+  .page-title { font-family:'Baloo 2',sans-serif; font-size:22px; font-weight:800; color:var(--navy); margin-bottom:20px; display:flex; align-items:center; gap:10px; }
+  .page-title span { font-size:26px; }
+
+  /* CARD */
+  .card { background:var(--card); border-radius:16px; padding:24px; box-shadow:0 2px 12px rgba(15,43,78,0.08); border:1px solid var(--border); margin-bottom:20px; }
+
+  /* FORM */
+  .form-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; }
+  .form-group { display:flex; flex-direction:column; gap:6px; }
+  label { font-size:13px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; }
+  input, select {
+    padding:11px 14px; border:2px solid var(--border); border-radius:10px;
+    font-family:'Nunito',sans-serif; font-size:14px; color:var(--text);
+    transition:border-color 0.2s; outline:none; background:#fff;
+  }
+  input:focus, select:focus { border-color:var(--accent2); }
+  .btn {
+    padding:11px 28px; border:none; border-radius:10px; font-family:'Nunito',sans-serif;
+    font-size:14px; font-weight:700; cursor:pointer; transition:all 0.2s;
+  }
+  .btn-primary { background:var(--navy); color:#fff; }
+  .btn-primary:hover { background:var(--blue); transform:translateY(-1px); }
+  .btn-accent { background:var(--accent); color:var(--navy); }
+  .btn-accent:hover { background:#d97706; transform:translateY(-1px); }
+  .btn-danger { background:var(--red); color:#fff; }
+  .btn-danger:hover { background:#dc2626; }
+  .btn-sm { padding:6px 14px; font-size:12px; }
+  .btn-success { background:var(--green); color:#fff; }
+
+  /* TABLE */
+  .table-wrap { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; }
+  thead tr { background:linear-gradient(135deg, var(--navy), var(--blue)); }
+  thead th { color:#fff; padding:12px 16px; text-align:left; font-size:13px; font-weight:700; white-space:nowrap; }
+  tbody tr { border-bottom:1px solid var(--border); transition:background 0.15s; }
+  tbody tr:hover { background:#f8faff; }
+  tbody td { padding:11px 16px; font-size:14px; }
+  .badge {
+    display:inline-block; padding:3px 10px; border-radius:20px; font-size:12px; font-weight:700;
+  }
+  .badge-kakade { background:#dbeafe; color:#1e40af; }
+  .badge-aat { background:#fef3c7; color:#92400e; }
+  .badge-boat1 { background:#d1fae5; color:#065f46; }
+  .badge-boat2 { background:#ede9fe; color:#4c1d95; }
+  .badge-boat3 { background:#ffe4e6; color:#9f1239; }
+  .badge-boat4 { background:#fef9c3; color:#713f12; }
+
+  /* STATS ROW */
+  .stats-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; margin-bottom:20px; }
+  .stat-card { background:var(--card); border-radius:14px; padding:18px 20px; box-shadow:0 2px 10px rgba(15,43,78,0.07); border:1px solid var(--border); }
+  .stat-card .stat-label { font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px; }
+  .stat-card .stat-value { font-family:'Baloo 2',sans-serif; font-size:30px; font-weight:800; color:var(--navy); }
+  .stat-card .stat-sub { font-size:12px; color:var(--muted); margin-top:2px; }
+  .stat-accent .stat-value { color:var(--accent); }
+  .stat-green .stat-value { color:var(--green); }
+  .stat-red .stat-value { color:var(--red); }
+
+  /* FILTER ROW */
+  .filter-row { display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end; }
+  .filter-row .form-group { flex:1; min-width:160px; }
+
+  /* PAYMENT FORM */
+  .payment-status-paid { color:var(--green); font-weight:700; }
+  .payment-status-pending { color:var(--red); font-weight:700; }
+  .payment-status-advance { color:var(--accent2); font-weight:700; }
+
+  /* EMPTY */
+  .empty { text-align:center; padding:40px 20px; color:var(--muted); }
+  .empty .empty-icon { font-size:48px; margin-bottom:12px; }
+
+  /* TOAST */
+  #toast {
+    position:fixed; bottom:24px; right:24px; background:var(--navy); color:#fff;
+    padding:12px 20px; border-radius:12px; font-size:14px; font-weight:600;
+    box-shadow:0 8px 24px rgba(15,43,78,0.3); transform:translateY(80px);
+    opacity:0; transition:all 0.35s; z-index:999;
+  }
+  #toast.show { transform:translateY(0); opacity:1; }
+
+  @media(max-width:600px) {
+    header { flex-direction:column; align-items:flex-start; gap:8px; padding:12px; }
+    nav { flex-wrap:wrap; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🚜</div>
+    <div>
+      <h1>Tractor Trip</h1>
+      <span>Boat Trip Management System</span>
+    </div>
+  </div>
+  <nav>
+    <button class="active" onclick="showPage('entry')">📝 Entry</button>
+    <button onclick="showPage('records')">📋 Records</button>
+    <button onclick="showPage('reports')">📊 Reports</button>
+    <button onclick="showPage('payments')">💰 Payments</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- ======= ENTRY PAGE ======= -->
+  <div class="page active" id="page-entry">
+    <div class="page-title"><span>📝</span> New Trip Entry</div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" id="e-date">
+        </div>
+        <div class="form-group">
+          <label>Boat Name</label>
+          <select id="e-boat">
+            <option value="">-- Select Boat --</option>
+            <option>Al Muhammad Boat</option>
+            <option>Al Bahar Boat</option>
+            <option>Safiya Boat</option>
+            <option>Maryam Boat</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Tractor Service Company</label>
+          <select id="e-company">
+            <option value="">-- Select Company --</option>
+            <option>Kakade</option>
+            <option>AAT</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>No. of Trips</label>
+          <input type="number" id="e-trips" min="1" placeholder="e.g. 5">
+        </div>
+        <div class="form-group">
+          <label>Rate per Trip (₹)</label>
+          <input type="number" id="e-rate" min="0" placeholder="Optional">
+        </div>
+        <div class="form-group" style="justify-content:flex-end;">
+          <label>&nbsp;</label>
+          <button class="btn btn-primary" onclick="addEntry()">✅ Add Entry</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Today's Entries -->
+    <div class="page-title" style="font-size:17px;"><span>📅</span> Today's Entries</div>
+    <div class="card">
+      <div class="table-wrap" id="today-table-wrap">
+        <div class="empty"><div class="empty-icon">📭</div>No entries for today yet.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======= RECORDS PAGE ======= -->
+  <div class="page" id="page-records">
+    <div class="page-title"><span>📋</span> All Records</div>
+    <div class="card">
+      <div class="filter-row">
+        <div class="form-group">
+          <label>Filter by Boat</label>
+          <select id="r-boat" onchange="renderRecords()">
+            <option value="">All Boats</option>
+            <option>Al Muhammad Boat</option>
+            <option>Al Bahar Boat</option>
+            <option>Safiya Boat</option>
+            <option>Maryam Boat</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Filter by Company</label>
+          <select id="r-company" onchange="renderRecords()">
+            <option value="">All Companies</option>
+            <option>Kakade</option>
+            <option>AAT</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>&nbsp;</label>
+          <button class="btn btn-accent" onclick="clearFilters()">🔄 Clear</button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="table-wrap" id="records-table-wrap">
+        <div class="empty"><div class="empty-icon">📂</div>No records found.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======= REPORTS PAGE ======= -->
+  <div class="page" id="page-reports">
+    <div class="page-title"><span>📊</span> Trip Reports</div>
+    <div class="card">
+      <div class="filter-row">
+        <div class="form-group">
+          <label>Start Date</label>
+          <input type="date" id="rp-start">
+        </div>
+        <div class="form-group">
+          <label>End Date</label>
+          <input type="date" id="rp-end">
+        </div>
+        <div class="form-group">
+          <label>Boat</label>
+          <select id="rp-boat">
+            <option value="">All Boats</option>
+            <option>Al Muhammad Boat</option>
+            <option>Al Bahar Boat</option>
+            <option>Safiya Boat</option>
+            <option>Maryam Boat</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Company</label>
+          <select id="rp-company">
+            <option value="">All Companies</option>
+            <option>Kakade</option>
+            <option>AAT</option>
+          </select>
+        </div>
+        <div class="form-group" style="justify-content:flex-end;">
+          <label>&nbsp;</label>
+          <button class="btn btn-primary" onclick="generateReport()">🔍 Generate Report</button>
+        </div>
+      </div>
+    </div>
+    <div id="report-output"></div>
+  </div>
+
+  <!-- ======= PAYMENTS PAGE ======= -->
+  <div class="page" id="page-payments">
+    <div class="page-title"><span>💰</span> Payment Records</div>
+
+    <!-- Add Payment -->
+    <div class="card">
+      <div style="font-weight:700; font-size:15px; margin-bottom:14px; color:var(--navy);">Record Payment</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" id="p-date">
+        </div>
+        <div class="form-group">
+          <label>Company</label>
+          <select id="p-company">
+            <option value="">-- Select --</option>
+            <option>Kakade</option>
+            <option>AAT</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Amount (₹)</label>
+          <input type="number" id="p-amount" min="0" placeholder="Enter amount">
+        </div>
+        <div class="form-group">
+          <label>Type</label>
+          <select id="p-type">
+            <option value="payment">Payment Made</option>
+            <option value="advance">Advance Paid</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Note</label>
+          <input type="text" id="p-note" placeholder="Optional note">
+        </div>
+        <div class="form-group" style="justify-content:flex-end;">
+          <label>&nbsp;</label>
+          <button class="btn btn-success" onclick="addPayment()">💾 Save Payment</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <div id="payment-summary"></div>
+
+    <!-- Payment List -->
+    <div class="card">
+      <div style="font-weight:700; font-size:15px; margin-bottom:14px; color:var(--navy);">Payment History</div>
+      <div class="table-wrap" id="payment-table-wrap">
+        <div class="empty"><div class="empty-icon">💳</div>No payments recorded.</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<div id="toast"></div>
+
+<script>
+// ─── DATA LAYER ───────────────────────────────────────────────────────────────
+const DB = {
+  getTrips: () => JSON.parse(localStorage.getItem('tt_trips') || '[]'),
+  saveTrips: (d) => localStorage.setItem('tt_trips', JSON.stringify(d)),
+  getPayments: () => JSON.parse(localStorage.getItem('tt_payments') || '[]'),
+  savePayments: (d) => localStorage.setItem('tt_payments', JSON.stringify(d)),
+};
+
+// ─── NAVIGATION ───────────────────────────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  const btns = document.querySelectorAll('nav button');
+  const map = { entry:0, records:1, reports:2, payments:3 };
+  btns[map[name]].classList.add('active');
+  if (name === 'entry') renderTodayEntries();
+  if (name === 'records') renderRecords();
+  if (name === 'payments') renderPayments();
+}
+
+// ─── TOAST ────────────────────────────────────────────────────────────────────
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ─── BOATS / COMPANY BADGES ───────────────────────────────────────────────────
+const boatClass = {
+  'Al Muhammad Boat': 'badge-boat1',
+  'Al Bahar Boat': 'badge-boat2',
+  'Safiya Boat': 'badge-boat3',
+  'Maryam Boat': 'badge-boat4',
+};
+const companyClass = { 'Kakade':'badge-kakade','AAT':'badge-aat' };
+
+function boatBadge(b) { return `<span class="badge ${boatClass[b]||''}">${b}</span>`; }
+function companyBadge(c) { return `<span class="badge ${companyClass[c]||''}">${c}</span>`; }
+
+// ─── ENTRY PAGE ───────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  // Set today's date defaults
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('e-date').value = today;
+  document.getElementById('p-date').value = today;
+  renderTodayEntries();
+});
+
+function addEntry() {
+  const date = document.getElementById('e-date').value;
+  const boat = document.getElementById('e-boat').value;
+  const company = document.getElementById('e-company').value;
+  const trips = parseInt(document.getElementById('e-trips').value);
+  const rate = parseFloat(document.getElementById('e-rate').value) || 0;
+
+  if (!date || !boat || !company || !trips || trips < 1) {
+    toast('⚠️ Please fill all required fields!'); return;
+  }
+
+  const data = DB.getTrips();
+  data.push({ id: Date.now(), date, boat, company, trips, rate, amount: trips * rate });
+  DB.saveTrips(data);
+  document.getElementById('e-trips').value = '';
+  document.getElementById('e-rate').value = '';
+  toast('✅ Entry added successfully!');
+  renderTodayEntries();
+}
+
+function renderTodayEntries() {
+  const today = new Date().toISOString().split('T')[0];
+  const data = DB.getTrips().filter(t => t.date === today);
+  const wrap = document.getElementById('today-table-wrap');
+  if (!data.length) { wrap.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>No entries for today yet.</div>'; return; }
+  wrap.innerHTML = buildTable(data, true);
+}
+
+function deleteEntry(id) {
+  if (!confirm('Delete this entry?')) return;
+  DB.saveTrips(DB.getTrips().filter(t => t.id !== id));
+  toast('🗑️ Entry deleted.');
+  renderTodayEntries();
+  renderRecords();
+}
+
+function buildTable(data, showDelete = false) {
+  let total = 0, totalAmt = 0;
+  let rows = data.map(t => {
+    total += t.trips; totalAmt += (t.amount || 0);
+    return `<tr>
+      <td>${t.date}</td>
+      <td>${boatBadge(t.boat)}</td>
+      <td>${companyBadge(t.company)}</td>
+      <td><strong>${t.trips}</strong></td>
+      <td>${t.rate ? '₹' + t.rate : '—'}</td>
+      <td>${t.amount ? '₹' + t.amount.toLocaleString() : '—'}</td>
+      ${showDelete ? `<td><button class="btn btn-danger btn-sm" onclick="deleteEntry(${t.id})">🗑️</button></td>` : ''}
+    </tr>`;
+  }).join('');
+
+  return `<table>
+    <thead><tr>
+      <th>Date</th><th>Boat</th><th>Company</th><th>No. of Trips</th><th>Rate/Trip</th><th>Amount</th>
+      ${showDelete ? '<th>Delete</th>' : ''}
+    </tr></thead>
+    <tbody>${rows}</tbody>
+    <tfoot><tr style="background:#f0f4fa; font-weight:700;">
+      <td colspan="${showDelete?3:3}" style="padding:10px 16px; text-align:right; color:var(--navy);">Total:</td>
+      <td style="padding:10px 16px;">${total} trips</td>
+      <td></td>
+      <td style="padding:10px 16px;">${totalAmt ? '₹'+totalAmt.toLocaleString() : '—'}</td>
+      ${showDelete ? '<td></td>' : ''}
+    </tr></tfoot>
+  </table>`;
+}
+
+// ─── RECORDS PAGE ─────────────────────────────────────────────────────────────
+function renderRecords() {
+  let data = DB.getTrips();
+  const boat = document.getElementById('r-boat')?.value;
+  const company = document.getElementById('r-company')?.value;
+  if (boat) data = data.filter(t => t.boat === boat);
+  if (company) data = data.filter(t => t.company === company);
+  data.sort((a,b) => b.date.localeCompare(a.date));
+  const wrap = document.getElementById('records-table-wrap');
+  if (!data.length) { wrap.innerHTML = '<div class="empty"><div class="empty-icon">📂</div>No records found.</div>'; return; }
+  wrap.innerHTML = buildTable(data, false);
+}
+
+function clearFilters() {
+  document.getElementById('r-boat').value = '';
+  document.getElementById('r-company').value = '';
+  renderRecords();
+}
+
+// ─── REPORTS PAGE ─────────────────────────────────────────────────────────────
+function generateReport() {
+  const start = document.getElementById('rp-start').value;
+  const end = document.getElementById('rp-end').value;
+  const boat = document.getElementById('rp-boat').value;
+  const company = document.getElementById('rp-company').value;
+
+  if (!start || !end) { toast('⚠️ Please select start and end date!'); return; }
+  if (start > end) { toast('⚠️ Start date cannot be after end date!'); return; }
+
+  let data = DB.getTrips().filter(t => t.date >= start && t.date <= end);
+  if (boat) data = data.filter(t => t.boat === boat);
+  if (company) data = data.filter(t => t.company === company);
+  data.sort((a,b) => a.date.localeCompare(b.date));
+
+  const totalTrips = data.reduce((s,t) => s+t.trips, 0);
+  const totalAmt = data.reduce((s,t) => s+(t.amount||0), 0);
+
+  // Per boat summary
+  const boatSummary = {};
+  const companySummary = {};
+  data.forEach(t => {
+    boatSummary[t.boat] = (boatSummary[t.boat]||0) + t.trips;
+    companySummary[t.company] = (companySummary[t.company]||0) + t.trips;
+  });
+
+  const out = document.getElementById('report-output');
+
+  const statsHTML = `
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Date Range</div>
+      <div class="stat-value" style="font-size:16px;margin-top:4px;">${start} → ${end}</div>
+    </div>
+    <div class="stat-card stat-accent">
+      <div class="stat-label">Total Trips</div>
+      <div class="stat-value">${totalTrips}</div>
+      <div class="stat-sub">${data.length} entry records</div>
+    </div>
+    <div class="stat-card stat-green">
+      <div class="stat-label">Total Amount</div>
+      <div class="stat-value" style="font-size:24px;">₹${totalAmt.toLocaleString()}</div>
+    </div>
+  </div>`;
+
+  // Boat breakdown
+  const boatRows = Object.entries(boatSummary).map(([b,t]) =>
+    `<tr><td>${boatBadge(b)}</td><td><strong>${t}</strong> trips</td></tr>`
+  ).join('');
+
+  // Company breakdown
+  const compRows = Object.entries(companySummary).map(([c,t]) =>
+    `<tr><td>${companyBadge(c)}</td><td><strong>${t}</strong> trips</td></tr>`
+  ).join('');
+
+  const summaryHTML = `
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:20px;">
+    <div class="card">
+      <div style="font-weight:700;color:var(--navy);margin-bottom:12px;">🚢 Boat-wise Summary</div>
+      <table><thead><tr><th>Boat</th><th>Trips</th></tr></thead>
+      <tbody>${boatRows || '<tr><td colspan="2" style="padding:12px;color:var(--muted)">No data</td></tr>'}</tbody></table>
+    </div>
+    <div class="card">
+      <div style="font-weight:700;color:var(--navy);margin-bottom:12px;">🏢 Company-wise Summary</div>
+      <table><thead><tr><th>Company</th><th>Trips</th></tr></thead>
+      <tbody>${compRows || '<tr><td colspan="2" style="padding:12px;color:var(--muted)">No data</td></tr>'}</tbody></table>
+    </div>
+  </div>`;
+
+  const tableHTML = data.length
+    ? `<div class="card"><div style="font-weight:700;color:var(--navy);margin-bottom:14px;">📋 Detailed Records</div><div class="table-wrap">${buildTable(data)}</div></div>`
+    : `<div class="card"><div class="empty"><div class="empty-icon">🔍</div>No records found for this range.</div></div>`;
+
+  out.innerHTML = statsHTML + summaryHTML + tableHTML;
+  toast(`📊 Report generated — ${totalTrips} trips found!`);
+}
+
+// ─── PAYMENTS PAGE ────────────────────────────────────────────────────────────
+function addPayment() {
+  const date = document.getElementById('p-date').value;
+  const company = document.getElementById('p-company').value;
+  const amount = parseFloat(document.getElementById('p-amount').value);
+  const type = document.getElementById('p-type').value;
+  const note = document.getElementById('p-note').value.trim();
+
+  if (!date || !company || !amount || amount <= 0) {
+    toast('⚠️ Please fill all required fields!'); return;
+  }
+
+  const data = DB.getPayments();
+  data.push({ id: Date.now(), date, company, amount, type, note });
+  DB.savePayments(data);
+  document.getElementById('p-amount').value = '';
+  document.getElementById('p-note').value = '';
+  toast('💰 Payment recorded!');
+  renderPayments();
+}
+
+function deletePayment(id) {
+  if (!confirm('Delete this payment record?')) return;
+  DB.savePayments(DB.getPayments().filter(p => p.id !== id));
+  toast('🗑️ Payment deleted.');
+  renderPayments();
+}
+
+function renderPayments() {
+  const payments = DB.getPayments().sort((a,b) => b.date.localeCompare(a.date));
+  const trips = DB.getTrips();
+
+  // Calculate totals per company
+  const companies = ['Kakade', 'AAT'];
+  let summaryHTML = '<div class="stats-row">';
+  companies.forEach(co => {
+    const tripAmt = trips.filter(t => t.company===co).reduce((s,t)=>s+(t.amount||0),0);
+    const paid = payments.filter(p=>p.company===co && p.type==='payment').reduce((s,p)=>s+p.amount,0);
+    const advance = payments.filter(p=>p.company===co && p.type==='advance').reduce((s,p)=>s+p.amount,0);
+    const totalPaid = paid + advance;
+    const balance = tripAmt - totalPaid;
+
+    summaryHTML += `
+    <div class="stat-card">
+      <div class="stat-label">${co}</div>
+      <div style="margin-top:8px;display:grid;gap:6px;font-size:13px;">
+        <div>🚜 Total Trips Amount: <strong>₹${tripAmt.toLocaleString()}</strong></div>
+        <div>✅ Total Paid: <strong style="color:var(--green)">₹${totalPaid.toLocaleString()}</strong></div>
+        <div>${balance > 0 
+          ? `⏳ Pending: <strong style="color:var(--red)">₹${balance.toLocaleString()}</strong>` 
+          : `🎉 Advance: <strong style="color:var(--accent2)">₹${Math.abs(balance).toLocaleString()}</strong>`}
+        </div>
+      </div>
+    </div>`;
+  });
+  summaryHTML += '</div>';
+
+  document.getElementById('payment-summary').innerHTML = summaryHTML;
+
+  const wrap = document.getElementById('payment-table-wrap');
+  if (!payments.length) { wrap.innerHTML = '<div class="empty"><div class="empty-icon">💳</div>No payments recorded.</div>'; return; }
+
+  const rows = payments.map(p => `<tr>
+    <td>${p.date}</td>
+    <td>${companyBadge(p.company)}</td>
+    <td><strong>₹${p.amount.toLocaleString()}</strong></td>
+    <td><span class="badge ${p.type==='advance'?'badge-boat2':'badge-boat1'}">${p.type==='advance'?'Advance':'Payment'}</span></td>
+    <td>${p.note || '—'}</td>
+    <td><button class="btn btn-danger btn-sm" onclick="deletePayment(${p.id})">🗑️</button></td>
+  </tr>`).join('');
+
+  wrap.innerHTML = `<table>
+    <thead><tr><th>Date</th><th>Company</th><th>Amount</th><th>Type</th><th>Note</th><th>Delete</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+</script>
+</body>
+</html>
