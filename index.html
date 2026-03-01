@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tractor Trip</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0f2b4e;
+    --blue: #1a4a7a;
+    --accent: #f59e0b;
+    --accent2: #3b82f6;
+    --green: #10b981;
+    --red: #ef4444;
+    --bg: #f0f4fa;
+    --card: #ffffff;
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: #d1dbe8;
+    --gdrive: #1a73e8;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+  header {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--blue) 100%);
+    color:#fff; padding:0 16px;
+    box-shadow:0 4px 20px rgba(15,43,78,0.35);
+    position:sticky; top:0; z-index:100;
+  }
+  .header-top { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px; padding:10px 0 4px; }
+  .logo { display:flex; align-items:center; gap:10px; }
+  .logo-icon { font-size:28px; }
+  .logo h1 { font-family:'Baloo 2',sans-serif; font-size:20px; font-weight:800; }
+  .logo span { font-size:10px; opacity:0.7; display:block; margin-top:-3px; }
+
+  /* DRIVE BAR */
+  #drive-bar { background:rgba(0,0,0,0.18); padding:5px 0 5px; display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; }
+  #drive-status { font-size:12px; font-weight:600; color:rgba(255,255,255,0.9); display:flex; align-items:center; gap:6px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:#94a3b8; display:inline-block; flex-shrink:0; }
+  .dot.connected { background:#10b981; animation:pulse 2s infinite; }
+  .dot.saving { background:#f59e0b; }
+  .dot.error { background:#ef4444; }
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.4} }
+  .drive-btns { display:flex; gap:5px; flex-wrap:wrap; }
+  .dbtn { font-family:'Nunito',sans-serif; font-size:11px; font-weight:700; padding:4px 10px; border-radius:6px; border:none; cursor:pointer; transition:all 0.2s; white-space:nowrap; }
+  .dbtn-connect { background:#fff; color:var(--gdrive); }
+  .dbtn-save { background:#1a73e8; color:#fff; }
+  .dbtn-load { background:rgba(255,255,255,0.15); color:#fff; border:1px solid rgba(255,255,255,0.3); }
+  .dbtn-disc { background:rgba(239,68,68,0.2); color:#fca5a5; border:1px solid rgba(239,68,68,0.3); }
+
+  nav { display:flex; gap:3px; flex-wrap:wrap; padding:6px 0 8px; }
+  nav button {
+    background:transparent; border:none; color:rgba(255,255,255,0.8);
+    font-family:'Nunito',sans-serif; font-size:12px; font-weight:600;
+    padding:6px 11px; border-radius:7px; cursor:pointer; transition:all 0.2s;
+  }
+  nav button:hover { background:rgba(255,255,255,0.15); color:#fff; }
+  nav button.active { background:var(--accent); color:var(--navy); }
+
+  main { max-width:1100px; margin:0 auto; padding:20px 14px; }
+  .page { display:none; }
+  .page.active { display:block; }
+  .page-title { font-family:'Baloo 2',sans-serif; font-size:20px; font-weight:800; color:var(--navy); margin-bottom:14px; }
+  .card { background:var(--card); border-radius:14px; padding:18px; box-shadow:0 2px 10px rgba(15,43,78,0.08); border:1px solid var(--border); margin-bottom:14px; }
+
+  .form-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; }
+  .form-group { display:flex; flex-direction:column; gap:5px; }
+  label { font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; }
+  input, select { padding:10px 12px; border:2px solid var(--border); border-radius:10px; font-family:'Nunito',sans-serif; font-size:14px; color:var(--text); transition:border-color 0.2s; outline:none; background:#fff; }
+  input:focus, select:focus { border-color:var(--accent2); }
+
+  .btn { padding:10px 18px; border:none; border-radius:10px; font-family:'Nunito',sans-serif; font-size:13px; font-weight:700; cursor:pointer; transition:all 0.2s; display:inline-block; }
+  .btn-primary { background:var(--navy); color:#fff; }
+  .btn-accent { background:var(--accent); color:var(--navy); }
+  .btn-danger { background:var(--red); color:#fff; }
+  .btn-success { background:var(--green); color:#fff; }
+  .btn-info { background:var(--accent2); color:#fff; }
+  .btn-gdrive { background:var(--gdrive); color:#fff; }
+  .btn-sm { padding:5px 10px; font-size:11px; }
+  .btn-block { width:100%; margin-bottom:7px; }
+
+  .table-wrap { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; }
+  thead tr { background:linear-gradient(135deg,var(--navy),var(--blue)); }
+  thead th { color:#fff; padding:10px 12px; text-align:left; font-size:11px; font-weight:700; white-space:nowrap; }
+  tbody tr { border-bottom:1px solid var(--border); transition:background 0.15s; }
+  tbody tr:hover { background:#f8faff; }
+  tbody td { padding:9px 12px; font-size:13px; }
+  tfoot tr { background:#f0f4fa; }
+  tfoot td { padding:9px 12px; font-size:13px; font-weight:700; }
+
+  .badge { display:inline-block; padding:2px 9px; border-radius:20px; font-size:11px; font-weight:700; }
+  .badge-kakade { background:#dbeafe; color:#1e40af; }
+  .badge-aat { background:#fef3c7; color:#92400e; }
+  .badge-boat1 { background:#d1fae5; color:#065f46; }
+  .badge-boat2 { background:#ede9fe; color:#4c1d95; }
+  .badge-boat3 { background:#ffe4e6; color:#9f1239; }
+  .badge-boat4 { background:#fef9c3; color:#713f12; }
+
+  .stats-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(155px,1fr)); gap:12px; margin-bottom:14px; }
+  .stat-card { background:var(--card); border-radius:12px; padding:14px 15px; box-shadow:0 2px 8px rgba(15,43,78,0.07); border:1px solid var(--border); }
+  .stat-label { font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
+  .stat-value { font-family:'Baloo 2',sans-serif; font-size:26px; font-weight:800; color:var(--navy); }
+  .stat-sub { font-size:10px; color:var(--muted); margin-top:2px; }
+  .stat-accent .stat-value { color:var(--accent); }
+  .stat-green .stat-value { color:var(--green); }
+
+  .filter-row { display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; }
+  .filter-row .form-group { flex:1; min-width:130px; }
+
+  .empty { text-align:center; padding:30px 20px; color:var(--muted); }
+  .empty .empty-icon { font-size:40px; margin-bottom:10px; }
+
+  /* SYNC */
+  .sync-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; }
+  .sync-box { background:var(--card); border-radius:14px; padding:18px; border:1px solid var(--border); box-shadow:0 2px 10px rgba(15,43,78,0.07); }
+  .sync-box.drive-box { border-color:#93c5fd; background:linear-gradient(135deg,#eff6ff 0%,#fff 60%); }
+  .sync-box h3 { font-family:'Baloo 2',sans-serif; font-size:16px; font-weight:800; color:var(--navy); margin-bottom:5px; }
+  .sync-box p { font-size:12px; color:var(--muted); margin-bottom:12px; line-height:1.6; }
+  .sync-icon { font-size:28px; margin-bottom:6px; }
+  .file-drop { border:2px dashed var(--border); border-radius:10px; padding:16px; text-align:center; color:var(--muted); font-size:12px; cursor:pointer; transition:all 0.2s; margin-bottom:8px; }
+  .file-drop:hover { border-color:var(--accent2); color:var(--accent2); background:#f0f7ff; }
+  .merge-info { background:#f0f7ff; border:1px solid #bfdbfe; border-radius:10px; padding:10px; font-size:12px; color:#1e40af; margin-top:8px; line-height:1.7; }
+  .info-green { background:#f0fdf4; border:1px solid #86efac; border-radius:10px; padding:10px 14px; font-size:12px; color:#166534; }
+  .info-blue { background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:10px 14px; font-size:12px; color:#1e40af; line-height:1.6; }
+
+  #toast { position:fixed; bottom:16px; right:14px; left:14px; max-width:420px; margin:0 auto; background:var(--navy); color:#fff; padding:11px 16px; border-radius:12px; font-size:13px; font-weight:600; box-shadow:0 8px 24px rgba(15,43,78,0.3); transform:translateY(100px); opacity:0; transition:all 0.35s; z-index:9999; text-align:center; }
+  #toast.show { transform:translateY(0); opacity:1; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div class="logo">
+      <div class="logo-icon">🚜</div>
+      <div><h1>Tractor Trip</h1><span>Boat Trip Management System</span></div>
+    </div>
+  </div>
+  <div id="drive-bar">
+    <div id="drive-status"><span class="dot" id="drive-dot"></span><span id="drive-status-text">Google Drive: Not connected</span></div>
+    <div class="drive-btns" id="drive-btns">
+      <button class="dbtn dbtn-connect" onclick="driveConnect()">🔗 Connect Google Drive</button>
+    </div>
+  </div>
+  <nav>
+    <button class="active" id="nav-entry" onclick="showPage('entry')">📝 Entry</button>
+    <button id="nav-records" onclick="showPage('records')">📋 Records</button>
+    <button id="nav-reports" onclick="showPage('reports')">📊 Reports</button>
+    <button id="nav-payments" onclick="showPage('payments')">💰 Payments</button>
+    <button id="nav-sync" onclick="showPage('sync')">🔄 Sync</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- ENTRY -->
+  <div class="page active" id="page-entry">
+    <div class="page-title">📝 New Trip Entry</div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="form-group"><label>Date</label><input type="date" id="e-date"></div>
+        <div class="form-group"><label>Boat Name</label>
+          <select id="e-boat"><option value="">-- Select Boat --</option><option>Al Muhammad Boat</option><option>Al Bahar Boat</option><option>Safiya Boat</option><option>Maryam Boat</option></select>
+        </div>
+        <div class="form-group"><label>Tractor Company</label>
+          <select id="e-company"><option value="">-- Select Company --</option><option>Kakade</option><option>AAT</option></select>
+        </div>
+        <div class="form-group"><label>No. of Trips</label><input type="number" id="e-trips" min="1" placeholder="e.g. 5"></div>
+        <div class="form-group"><label>Rate per Trip (₹)</label><input type="number" id="e-rate" min="0" placeholder="Optional"></div>
+        <div class="form-group" style="justify-content:flex-end;"><label>&nbsp;</label><button class="btn btn-primary" onclick="addEntry()">✅ Add Entry</button></div>
+      </div>
+    </div>
+    <div class="page-title" style="font-size:16px;">📅 Today's Entries</div>
+    <div class="card"><div id="today-table-wrap"><div class="empty"><div class="empty-icon">📭</div>No entries for today yet.</div></div></div>
+  </div>
+
+  <!-- RECORDS -->
+  <div class="page" id="page-records">
+    <div class="page-title">📋 All Records</div>
+    <div class="card">
+      <div class="filter-row">
+        <div class="form-group"><label>Filter Boat</label>
+          <select id="r-boat" onchange="renderRecords()"><option value="">All Boats</option><option>Al Muhammad Boat</option><option>Al Bahar Boat</option><option>Safiya Boat</option><option>Maryam Boat</option></select>
+        </div>
+        <div class="form-group"><label>Filter Company</label>
+          <select id="r-company" onchange="renderRecords()"><option value="">All Companies</option><option>Kakade</option><option>AAT</option></select>
+        </div>
+        <div class="form-group" style="justify-content:flex-end;"><label>&nbsp;</label><button class="btn btn-accent" onclick="clearFilters()">🔄 Clear</button></div>
+      </div>
+    </div>
+    <div class="card"><div id="records-table-wrap"><div class="empty"><div class="empty-icon">📂</div>No records found.</div></div></div>
+  </div>
+
+  <!-- REPORTS -->
+  <div class="page" id="page-reports">
+    <div class="page-title">📊 Trip Reports</div>
+    <div class="card">
+      <div class="filter-row">
+        <div class="form-group"><label>Start Date</label><input type="date" id="rp-start"></div>
+        <div class="form-group"><label>End Date</label><input type="date" id="rp-end"></div>
+        <div class="form-group"><label>Boat</label>
+          <select id="rp-boat"><option value="">All Boats</option><option>Al Muhammad Boat</option><option>Al Bahar Boat</option><option>Safiya Boat</option><option>Maryam Boat</option></select>
+        </div>
+        <div class="form-group"><label>Company</label>
+          <select id="rp-company"><option value="">All Companies</option><option>Kakade</option><option>AAT</option></select>
+        </div>
+        <div class="form-group" style="justify-content:flex-end;"><label>&nbsp;</label><button class="btn btn-primary" onclick="generateReport()">🔍 Generate</button></div>
+      </div>
+    </div>
+    <div id="report-output"></div>
+  </div>
+
+  <!-- PAYMENTS -->
+  <div class="page" id="page-payments">
+    <div class="page-title">💰 Payment Records</div>
+    <div class="card">
+      <div style="font-weight:700;font-size:14px;margin-bottom:12px;color:var(--navy);">Record Payment</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Date</label><input type="date" id="p-date"></div>
+        <div class="form-group"><label>Company</label>
+          <select id="p-company"><option value="">-- Select --</option><option>Kakade</option><option>AAT</option></select>
+        </div>
+        <div class="form-group"><label>Amount (₹)</label><input type="number" id="p-amount" min="0" placeholder="Enter amount"></div>
+        <div class="form-group"><label>Type</label>
+          <select id="p-type"><option value="payment">Payment Made</option><option value="advance">Advance Paid</option></select>
+        </div>
+        <div class="form-group"><label>Note</label><input type="text" id="p-note" placeholder="Optional note"></div>
+        <div class="form-group" style="justify-content:flex-end;"><label>&nbsp;</label><button class="btn btn-success" onclick="addPayment()">💾 Save</button></div>
+      </div>
+    </div>
+    <div id="payment-summary"></div>
+    <div class="card">
+      <div style="font-weight:700;font-size:14px;margin-bottom:12px;color:var(--navy);">Payment History</div>
+      <div id="payment-table-wrap"><div class="empty"><div class="empty-icon">💳</div>No payments recorded.</div></div>
+    </div>
+  </div>
+
+  <!-- SYNC -->
+  <div class="page" id="page-sync">
+    <div class="page-title">🔄 Import / Export & Sync</div>
+    <div class="card" id="sync-info"></div>
+    <div class="sync-grid">
+
+      <div class="sync-box drive-box">
+        <div class="sync-icon">☁️</div>
+        <h3 style="color:var(--gdrive);">Google Drive Sync</h3>
+        <p>Data is saved privately to your Google Drive. Auto-saves 3 seconds after every change. Access from any device.</p>
+        <div id="drive-sync-status" class="info-blue" style="margin-bottom:12px;">Connect Google Drive from the top bar to enable cloud sync.</div>
+        <button class="btn btn-gdrive btn-block" onclick="driveSaveManual()">☁️ Save to Drive Now</button>
+        <button class="btn btn-info btn-block" onclick="driveLoad(false)">⬇️ Load from Drive</button>
+      </div>
+
+      <div class="sync-box">
+        <div class="sync-icon">📤</div>
+        <h3>Local Backup</h3>
+        <p>Download all records as a backup file. Send via WhatsApp or Email to sync between devices.</p>
+        <button class="btn btn-primary btn-block" onclick="exportData()">⬇️ Download Backup (.json)</button>
+        <button class="btn btn-accent btn-block" onclick="exportCSV()">📊 Export as CSV (Excel)</button>
+      </div>
+
+      <div class="sync-box">
+        <div class="sync-icon">📥</div>
+        <h3>Local Restore (Merge)</h3>
+        <p>Import backup file. New records are added, existing records stay safe. No duplicates.</p>
+        <div class="file-drop" onclick="document.getElementById('import-file').click()">
+          <input type="file" id="import-file" accept=".json" onchange="previewImport(event)">
+          📂 Tap to select .json backup file
+        </div>
+        <div class="merge-info" id="merge-info" style="display:none;"></div>
+        <button class="btn btn-success btn-block" id="confirm-import-btn" style="display:none;" onclick="confirmImport()">✅ Confirm Merge</button>
+      </div>
+
+      <div class="sync-box">
+        <div class="sync-icon">🔁</div>
+        <h3>Replace All Data</h3>
+        <p>⚠️ Deletes current data and fully replaces with backup file. Use for full sync from another device.</p>
+        <div class="file-drop" onclick="document.getElementById('replace-file').click()">
+          <input type="file" id="replace-file" accept=".json" onchange="replaceImport(event)">
+          📂 Tap to select .json backup file
+        </div>
+      </div>
+
+      <div class="sync-box" style="border-color:#fca5a5;">
+        <div class="sync-icon">🗑️</div>
+        <h3 style="color:var(--red);">Clear All Data</h3>
+        <p>Permanently delete all trips and payments from this device. Cannot be undone. Export first!</p>
+        <button class="btn btn-danger btn-block" onclick="clearAllData()">🗑️ Clear All Data</button>
+      </div>
+
+    </div>
+
+    <div class="card" style="margin-top:4px;">
+      <div style="font-weight:700;color:var(--navy);font-size:14px;margin-bottom:10px;">📖 How to Use Sync</div>
+      <div style="display:grid;gap:8px;font-size:12px;line-height:1.7;">
+        <div>☁️ <strong>Google Drive (Best):</strong> Connect once → auto-saves after every entry → open on any device, click Load from Drive</div>
+        <div>📱➡️💻 <strong>Manual Sync:</strong> Export on mobile → Send .json via WhatsApp → Open on laptop → Local Restore (Merge)</div>
+        <div>💡 <strong>Tip:</strong> Even with Drive connected, export a local backup every week for extra safety</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+<div id="toast"></div>
+
+<!-- Google Identity Services SDK -->
+<script src="https://accounts.google.com/gsi/client" async></script>
+
+<script>
+// ═══════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════
+var CLIENT_ID = '216032794821-o2thpd3k5aoomk00gn9p7e8oit6iiquu.apps.googleusercontent.com';
+var SCOPES = 'https://www.googleapis.com/auth/drive.appdata';
+var FILE_NAME = 'tractor-trip-data.json';
+var AUTO_SAVE_MS = 3000;
+
+// ═══════════════════════════════════════════════
+// DATA LAYER
+// ═══════════════════════════════════════════════
+var DB = {
+  getTrips: function() { try { return JSON.parse(localStorage.getItem('tt_trips') || '[]'); } catch(e) { return []; } },
+  saveTrips: function(d) { localStorage.setItem('tt_trips', JSON.stringify(d)); scheduleAutoSave(); },
+  getPayments: function() { try { return JSON.parse(localStorage.getItem('tt_payments') || '[]'); } catch(e) { return []; } },
+  savePayments: function(d) { localStorage.setItem('tt_payments', JSON.stringify(d)); scheduleAutoSave(); }
+};
+
+// ═══════════════════════════════════════════════
+// DRIVE STATE
+// ═══════════════════════════════════════════════
+var driveToken = null;
+var driveFileId = null;
+var driveConnected = false;
+var autoSaveTimer = null;
+
+// Restore session
+(function() {
+  var t = sessionStorage.getItem('tt_drive_token');
+  var f = sessionStorage.getItem('tt_drive_file_id');
+  if (t) { driveToken = t; driveFileId = f || null; driveConnected = true; }
+})();
+
+// ═══════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════
+function showPage(name) {
+  var pages = ['entry','records','reports','payments','sync'];
+  for (var i = 0; i < pages.length; i++) {
+    document.getElementById('page-' + pages[i]).classList.remove('active');
+    document.getElementById('nav-' + pages[i]).classList.remove('active');
+  }
+  document.getElementById('page-' + name).classList.add('active');
+  document.getElementById('nav-' + name).classList.add('active');
+  if (name === 'entry') renderTodayEntries();
+  if (name === 'records') renderRecords();
+  if (name === 'payments') renderPayments();
+  if (name === 'sync') renderSyncInfo();
+}
+
+// ═══════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════
+function toast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2800);
+}
+
+// ═══════════════════════════════════════════════
+// BADGES
+// ═══════════════════════════════════════════════
+var boatCls = { 'Al Muhammad Boat':'badge-boat1','Al Bahar Boat':'badge-boat2','Safiya Boat':'badge-boat3','Maryam Boat':'badge-boat4' };
+function boatBadge(b) { return '<span class="badge '+(boatCls[b]||'')+'">'+b+'</span>'; }
+function compBadge(c) { return '<span class="badge '+(c==='Kakade'?'badge-kakade':'badge-aat')+'">'+c+'</span>'; }
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+window.onload = function() {
+  var today = new Date().toISOString().split('T')[0];
+  document.getElementById('e-date').value = today;
+  document.getElementById('p-date').value = today;
+  renderTodayEntries();
+  updateDriveUI();
+  // Auto reconnect if user previously connected Drive
+  if (localStorage.getItem('tt_drive_ever_connected') === 'yes') {
+    silentAutoConnect();
+  }
+};
+
+// Silent auto-connect — waits for Google SDK to load, then reconnects invisibly
+function silentAutoConnect() {
+  var attempts = 0;
+  var maxAttempts = 20; // wait up to 10 seconds
+  setDot('saving');
+  document.getElementById('drive-status-text').textContent = '☁️ Reconnecting to Google Drive...';
+
+  function tryConnect() {
+    attempts++;
+    if (typeof google !== 'undefined' && google.accounts && google.accounts.oauth2) {
+      // SDK loaded — request token silently (prompt:'none' means no popup)
+      var client = google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID,
+        scope: SCOPES,
+        prompt: 'none', // KEY: no popup shown to user
+        callback: function(resp) {
+          if (resp.error || !resp.access_token) {
+            // Silent failed — show connect button, let user click manually
+            setDot('');
+            document.getElementById('drive-status-text').textContent = 'Google Drive: Click to connect';
+            updateDriveUI();
+            return;
+          }
+          driveToken = resp.access_token;
+          driveConnected = true;
+          sessionStorage.setItem('tt_drive_token', driveToken);
+          setDot('connected');
+          document.getElementById('drive-status-text').textContent = '☁️ Google Drive auto-connected!';
+          updateDriveUI();
+          // Silently load/merge any new data from Drive
+          driveLoad(true);
+        }
+      });
+      client.requestAccessToken({ prompt: 'none' });
+    } else if (attempts < maxAttempts) {
+      // SDK not loaded yet — wait 500ms and retry
+      setTimeout(tryConnect, 500);
+    } else {
+      // SDK failed to load (no internet?)
+      setDot('');
+      document.getElementById('drive-status-text').textContent = 'Google Drive: Not connected';
+      updateDriveUI();
+    }
+  }
+  tryConnect();
+}
+
+// ═══════════════════════════════════════════════
+// GOOGLE DRIVE — CONNECT
+// ═══════════════════════════════════════════════
+function driveConnect() {
+  if (typeof google === 'undefined' || !google.accounts) {
+    toast('⚠️ Google script not loaded. Check internet connection.'); return;
+  }
+  setDot('saving'); document.getElementById('drive-status-text').textContent = '⏳ Connecting to Google Drive...';
+  var client = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    callback: function(resp) {
+      if (resp.error) { setDot('error'); document.getElementById('drive-status-text').textContent = '❌ Connection failed'; updateDriveUI(); return; }
+      driveToken = resp.access_token;
+      driveConnected = true;
+      sessionStorage.setItem('tt_drive_token', driveToken);
+      localStorage.setItem('tt_drive_ever_connected', 'yes'); // remember for auto-reconnect
+      updateDriveUI();
+      setDot('connected'); document.getElementById('drive-status-text').textContent = '☁️ Connected — checking for saved data...';
+      driveLoad(true);
+    }
+  });
+  client.requestAccessToken();
+}
+
+function driveDisconnect() {
+  driveToken = null; driveFileId = null; driveConnected = false;
+  sessionStorage.removeItem('tt_drive_token'); sessionStorage.removeItem('tt_drive_file_id');
+  localStorage.removeItem('tt_drive_ever_connected'); // stop auto-reconnect
+  setDot(''); document.getElementById('drive-status-text').textContent = 'Google Drive: Not connected';
+  updateDriveUI(); toast('🔌 Google Drive disconnected');
+}
+
+function setDot(state) {
+  var d = document.getElementById('drive-dot');
+  d.className = 'dot' + (state ? ' ' + state : '');
+}
+
+function updateDriveUI() {
+  var btns = document.getElementById('drive-btns');
+  if (driveConnected) {
+    btns.innerHTML =
+      '<button class="dbtn dbtn-save" onclick="driveSaveManual()">💾 Save to Drive</button>' +
+      '<button class="dbtn dbtn-load" onclick="driveLoad(false)">⬇️ Load from Drive</button>' +
+      '<button class="dbtn dbtn-disc" onclick="driveDisconnect()">✕ Disconnect</button>';
+    setDot('connected');
+    var ls = localStorage.getItem('tt_drive_last_save') || 'Never';
+    document.getElementById('drive-status-text').textContent = '☁️ Google Drive connected | Last save: ' + ls;
+  } else {
+    btns.innerHTML = '<button class="dbtn dbtn-connect" onclick="driveConnect()">🔗 Connect Google Drive</button>';
+    setDot('');
+  }
+  // Update sync page box
+  var dss = document.getElementById('drive-sync-status');
+  if (dss) {
+    if (driveConnected) {
+      var ls2 = localStorage.getItem('tt_drive_last_save') || 'Never';
+      dss.innerHTML = '☁️ <strong>Connected to Google Drive</strong><br>🕐 Last saved: <strong>' + ls2 + '</strong><br>✅ Auto-save ON — saves 3 sec after any change';
+      dss.className = 'info-green';
+    } else {
+      dss.innerHTML = 'Connect Google Drive from the top bar to enable cloud sync.';
+      dss.className = 'info-blue';
+    }
+    dss.style.marginBottom = '12px';
+  }
+}
+
+// ═══════════════════════════════════════════════
+// DRIVE — AUTO SAVE
+// ═══════════════════════════════════════════════
+function scheduleAutoSave() {
+  if (!driveConnected || !driveToken) return;
+  if (autoSaveTimer) clearTimeout(autoSaveTimer);
+  setDot('saving');
+  document.getElementById('drive-status-text').textContent = '⏳ Changes detected — auto-saving in 3s...';
+  autoSaveTimer = setTimeout(function() { driveSave(false); }, AUTO_SAVE_MS);
+}
+
+function driveSaveManual() {
+  if (!driveConnected || !driveToken) { toast('⚠️ Connect Google Drive first!'); return; }
+  driveSave(true);
+}
+
+function driveSave(showToast) {
+  if (!driveToken) return;
+  var payload = JSON.stringify({ version:1, savedAt:new Date().toISOString(), trips:DB.getTrips(), payments:DB.getPayments() });
+  if (driveFileId) {
+    driveUpdateFile(driveFileId, payload, showToast);
+  } else {
+    driveFindFile(function(fid) {
+      if (fid) { driveFileId = fid; sessionStorage.setItem('tt_drive_file_id', fid); driveUpdateFile(fid, payload, showToast); }
+      else { driveCreateFile(payload, showToast); }
+    });
+  }
+}
+
+function driveFindFile(cb) {
+  fetch('https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name%3D%22' + FILE_NAME + '%22&fields=files(id)', {
+    headers: { 'Authorization': 'Bearer ' + driveToken }
+  }).then(function(r) { return r.json(); }).then(function(d) {
+    cb((d.files && d.files.length > 0) ? d.files[0].id : null);
+  }).catch(function() { cb(null); });
+}
+
+function driveCreateFile(payload, showToast) {
+  var b = 'tractor_trip_boundary';
+  var body = '--'+b+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+
+    JSON.stringify({name:FILE_NAME,parents:['appDataFolder']})+'\r\n--'+b+'\r\nContent-Type: application/json\r\n\r\n'+payload+'\r\n--'+b+'--';
+  fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+    method:'POST',
+    headers:{ 'Authorization':'Bearer '+driveToken, 'Content-Type':'multipart/related; boundary='+b },
+    body: body
+  }).then(function(r) { return r.json(); }).then(function(d) {
+    if (d.id) { driveFileId = d.id; sessionStorage.setItem('tt_drive_file_id', d.id); onSaveOK(showToast); }
+    else { onSaveFail(); }
+  }).catch(onSaveFail);
+}
+
+function driveUpdateFile(fid, payload, showToast) {
+  fetch('https://www.googleapis.com/upload/drive/v3/files/'+fid+'?uploadType=media', {
+    method:'PATCH',
+    headers:{ 'Authorization':'Bearer '+driveToken, 'Content-Type':'application/json' },
+    body: payload
+  }).then(function(r) {
+    if (r.ok) { onSaveOK(showToast); }
+    else if (r.status === 401 || r.status === 403) {
+      driveToken = null; driveConnected = false; sessionStorage.removeItem('tt_drive_token');
+      setDot('error'); document.getElementById('drive-status-text').textContent = '⚠️ Drive session expired — please reconnect';
+      updateDriveUI();
+    } else {
+      driveFileId = null; driveCreateFile(payload, showToast);
+    }
+  }).catch(onSaveFail);
+}
+
+function onSaveOK(showToast) {
+  var now = new Date().toLocaleString();
+  localStorage.setItem('tt_drive_last_save', now);
+  setDot('connected');
+  document.getElementById('drive-status-text').textContent = '☁️ Drive saved at ' + new Date().toLocaleTimeString();
+  updateDriveUI();
+  if (showToast) toast('☁️ Saved to Google Drive successfully!');
+}
+
+function onSaveFail() {
+  setDot('error');
+  document.getElementById('drive-status-text').textContent = '❌ Drive save failed — data safe locally';
+  toast('❌ Drive save failed. Your data is safe in local storage.');
+}
+
+// ═══════════════════════════════════════════════
+// DRIVE — LOAD
+// ═══════════════════════════════════════════════
+function driveLoad(silent) {
+  if (!driveToken) { if (!silent) toast('⚠️ Connect Google Drive first!'); return; }
+  setDot('saving');
+  document.getElementById('drive-status-text').textContent = '⏳ Loading from Google Drive...';
+
+  driveFindFile(function(fid) {
+    if (!fid) {
+      setDot('connected');
+      document.getElementById('drive-status-text').textContent = '☁️ Connected — no saved data found yet';
+      updateDriveUI();
+      if (!silent) toast('ℹ️ No data on Drive yet. Start adding entries — they will auto-save!');
+      return;
+    }
+    driveFileId = fid; sessionStorage.setItem('tt_drive_file_id', fid);
+    fetch('https://www.googleapis.com/drive/v3/files/'+fid+'?alt=media', {
+      headers: { 'Authorization':'Bearer '+driveToken }
+    }).then(function(r) { return r.json(); }).then(function(data) {
+      if (!data.trips || !data.payments) { toast('⚠️ Drive data seems corrupted!'); return; }
+      var localT = DB.getTrips();
+      var localP = DB.getPayments();
+      if (localT.length === 0 && localP.length === 0) {
+        // No local data — load Drive directly
+        localStorage.setItem('tt_trips', JSON.stringify(data.trips));
+        localStorage.setItem('tt_payments', JSON.stringify(data.payments));
+        renderTodayEntries();
+        setDot('connected'); updateDriveUI();
+        toast('✅ ' + data.trips.length + ' trips loaded from Google Drive!');
+      } else {
+        // Merge
+        var eT = {}, eP = {};
+        for (var i=0;i<localT.length;i++) eT[localT[i].id]=true;
+        for (var j=0;j<localP.length;j++) eP[localP[j].id]=true;
+        var nT = data.trips.filter(function(t){return!eT[t.id];});
+        var nP = data.payments.filter(function(p){return!eP[p.id];});
+        if (nT.length > 0 || nP.length > 0) {
+          localStorage.setItem('tt_trips', JSON.stringify(localT.concat(nT)));
+          localStorage.setItem('tt_payments', JSON.stringify(localP.concat(nP)));
+          renderTodayEntries();
+          toast('☁️ Merged from Drive: +' + nT.length + ' trips, +' + nP.length + ' payments!');
+        } else {
+          if (!silent) toast('✅ Already up to date with Drive!');
+        }
+        setDot('connected'); updateDriveUI();
+      }
+    }).catch(function() {
+      setDot('error');
+      document.getElementById('drive-status-text').textContent = '❌ Drive load failed';
+      toast('❌ Could not load from Drive. Check internet.');
+    });
+  });
+}
+
+// ═══════════════════════════════════════════════
+// ENTRY
+// ═══════════════════════════════════════════════
+function addEntry() {
+  var date = document.getElementById('e-date').value;
+  var boat = document.getElementById('e-boat').value;
+  var company = document.getElementById('e-company').value;
+  var trips = parseInt(document.getElementById('e-trips').value);
+  var rate = parseFloat(document.getElementById('e-rate').value) || 0;
+  if (!date||!boat||!company||!trips||trips<1) { toast('⚠️ Please fill all required fields!'); return; }
+  var data = DB.getTrips();
+  data.push({ id:Date.now(), date:date, boat:boat, company:company, trips:trips, rate:rate, amount:trips*rate });
+  DB.saveTrips(data);
+  document.getElementById('e-trips').value = '';
+  document.getElementById('e-rate').value = '';
+  toast('✅ Entry added!' + (driveConnected ? ' ☁️ Auto-saving...' : ''));
+  renderTodayEntries();
+}
+
+function renderTodayEntries() {
+  var today = new Date().toISOString().split('T')[0];
+  var data = DB.getTrips().filter(function(t){return t.date===today;});
+  var wrap = document.getElementById('today-table-wrap');
+  if (!data.length) { wrap.innerHTML='<div class="empty"><div class="empty-icon">📭</div>No entries for today yet.</div>'; return; }
+  wrap.innerHTML = buildTable(data, true);
+}
+
+function deleteEntry(id) {
+  if (!confirm('Delete this entry?')) return;
+  DB.saveTrips(DB.getTrips().filter(function(t){return t.id!==id;}));
+  toast('🗑️ Entry deleted.'); renderTodayEntries();
+}
+
+function buildTable(data, showDel) {
+  var tot=0, totAmt=0, rows='';
+  for (var i=0;i<data.length;i++) {
+    var t=data[i]; tot+=t.trips; totAmt+=(t.amount||0);
+    rows+='<tr><td>'+t.date+'</td><td>'+boatBadge(t.boat)+'</td><td>'+compBadge(t.company)+'</td>'+
+      '<td><strong>'+t.trips+'</strong></td>'+
+      '<td>'+(t.rate?'₹'+t.rate:'—')+'</td>'+
+      '<td>'+(t.amount?'₹'+t.amount.toLocaleString():'—')+'</td>'+
+      (showDel?'<td><button class="btn btn-danger btn-sm" onclick="deleteEntry('+t.id+')">🗑️</button></td>':'')+
+      '</tr>';
+  }
+  return '<table><thead><tr><th>Date</th><th>Boat</th><th>Company</th><th>Trips</th><th>Rate</th><th>Amount</th>'+(showDel?'<th>Del</th>':'')+
+    '</tr></thead><tbody>'+rows+'</tbody>'+
+    '<tfoot><tr><td colspan="3" style="text-align:right;color:var(--navy);">Total:</td>'+
+    '<td>'+tot+' trips</td><td></td><td>'+(totAmt?'₹'+totAmt.toLocaleString():'—')+'</td>'+(showDel?'<td></td>':'')+
+    '</tr></tfoot></table>';
+}
+
+// ═══════════════════════════════════════════════
+// RECORDS
+// ═══════════════════════════════════════════════
+function renderRecords() {
+  var data=DB.getTrips();
+  var boat=document.getElementById('r-boat').value;
+  var company=document.getElementById('r-company').value;
+  if(boat) data=data.filter(function(t){return t.boat===boat;});
+  if(company) data=data.filter(function(t){return t.company===company;});
+  data.sort(function(a,b){return b.date.localeCompare(a.date);});
+  var wrap=document.getElementById('records-table-wrap');
+  if(!data.length){wrap.innerHTML='<div class="empty"><div class="empty-icon">📂</div>No records found.</div>';return;}
+  wrap.innerHTML=buildTable(data,false);
+}
+
+function clearFilters() {
+  document.getElementById('r-boat').value='';
+  document.getElementById('r-company').value='';
+  renderRecords();
+}
+
+// ═══════════════════════════════════════════════
+// REPORTS
+// ═══════════════════════════════════════════════
+function generateReport() {
+  var start=document.getElementById('rp-start').value;
+  var end=document.getElementById('rp-end').value;
+  var boat=document.getElementById('rp-boat').value;
+  var company=document.getElementById('rp-company').value;
+  if(!start||!end){toast('⚠️ Please select start and end date!');return;}
+  if(start>end){toast('⚠️ Start date cannot be after end date!');return;}
+  var data=DB.getTrips().filter(function(t){return t.date>=start&&t.date<=end;});
+  if(boat) data=data.filter(function(t){return t.boat===boat;});
+  if(company) data=data.filter(function(t){return t.company===company;});
+  data.sort(function(a,b){return a.date.localeCompare(b.date);});
+  var tT=0,tA=0,bS={},cS={};
+  for(var i=0;i<data.length;i++){var t=data[i];tT+=t.trips;tA+=(t.amount||0);bS[t.boat]=(bS[t.boat]||0)+t.trips;cS[t.company]=(cS[t.company]||0)+t.trips;}
+  var bR='',cR='';
+  for(var b in bS) bR+='<tr><td>'+boatBadge(b)+'</td><td><strong>'+bS[b]+'</strong></td></tr>';
+  for(var c in cS) cR+='<tr><td>'+compBadge(c)+'</td><td><strong>'+cS[c]+'</strong></td></tr>';
+  var html='<div class="stats-row">'+
+    '<div class="stat-card"><div class="stat-label">Date Range</div><div style="font-size:12px;font-weight:700;margin-top:5px;">'+start+' → '+end+'</div></div>'+
+    '<div class="stat-card stat-accent"><div class="stat-label">Total Trips</div><div class="stat-value">'+tT+'</div><div class="stat-sub">'+data.length+' records</div></div>'+
+    '<div class="stat-card stat-green"><div class="stat-label">Total Amount</div><div class="stat-value" style="font-size:20px;">₹'+tA.toLocaleString()+'</div></div>'+
+    '</div>'+
+    '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:12px;">'+
+    '<div class="card"><div style="font-weight:700;color:var(--navy);margin-bottom:8px;">🚢 Boat-wise</div><div class="table-wrap"><table><thead><tr><th>Boat</th><th>Trips</th></tr></thead><tbody>'+(bR||'<tr><td colspan="2" style="padding:10px;color:var(--muted)">No data</td></tr>')+'</tbody></table></div></div>'+
+    '<div class="card"><div style="font-weight:700;color:var(--navy);margin-bottom:8px;">🏢 Company-wise</div><div class="table-wrap"><table><thead><tr><th>Company</th><th>Trips</th></tr></thead><tbody>'+(cR||'<tr><td colspan="2" style="padding:10px;color:var(--muted)">No data</td></tr>')+'</tbody></table></div></div>'+
+    '</div>';
+  if(data.length) html+='<div class="card"><div style="font-weight:700;color:var(--navy);margin-bottom:8px;">📋 Detailed Records</div><div class="table-wrap">'+buildTable(data,false)+'</div></div>';
+  else html+='<div class="card"><div class="empty"><div class="empty-icon">🔍</div>No records for this range.</div></div>';
+  document.getElementById('report-output').innerHTML=html;
+  toast('📊 Report ready — '+tT+' trips found!');
+}
+
+// ═══════════════════════════════════════════════
+// PAYMENTS
+// ═══════════════════════════════════════════════
+function addPayment() {
+  var date=document.getElementById('p-date').value;
+  var company=document.getElementById('p-company').value;
+  var amount=parseFloat(document.getElementById('p-amount').value);
+  var type=document.getElementById('p-type').value;
+  var note=document.getElementById('p-note').value.trim();
+  if(!date||!company||!amount||amount<=0){toast('⚠️ Please fill all required fields!');return;}
+  var data=DB.getPayments();
+  data.push({id:Date.now(),date:date,company:company,amount:amount,type:type,note:note});
+  DB.savePayments(data);
+  document.getElementById('p-amount').value='';
+  document.getElementById('p-note').value='';
+  toast('💰 Payment recorded!'+(driveConnected?' ☁️ Auto-saving...':''));
+  renderPayments();
+}
+
+function deletePayment(id) {
+  if(!confirm('Delete this payment?'))return;
+  DB.savePayments(DB.getPayments().filter(function(p){return p.id!==id;}));
+  toast('🗑️ Payment deleted.'); renderPayments();
+}
+
+function renderPayments() {
+  var payments=DB.getPayments().sort(function(a,b){return b.date.localeCompare(a.date);});
+  var trips=DB.getTrips();
+  var cos=['Kakade','AAT'];
+  var sHTML='<div class="stats-row">';
+  for(var i=0;i<cos.length;i++){
+    var co=cos[i],tA=0,pd=0,adv=0;
+    for(var j=0;j<trips.length;j++) if(trips[j].company===co) tA+=(trips[j].amount||0);
+    for(var k=0;k<payments.length;k++) if(payments[k].company===co){if(payments[k].type==='payment')pd+=payments[k].amount;else adv+=payments[k].amount;}
+    var tp=pd+adv,bal=tA-tp;
+    sHTML+='<div class="stat-card"><div class="stat-label">'+co+'</div>'+
+      '<div style="margin-top:8px;display:grid;gap:4px;font-size:12px;">'+
+      '<div>🚜 Trip Amt: <strong>₹'+tA.toLocaleString()+'</strong></div>'+
+      '<div>✅ Paid: <strong style="color:var(--green)">₹'+tp.toLocaleString()+'</strong></div>'+
+      '<div>'+(bal>0?'⏳ Pending: <strong style="color:var(--red)">₹'+bal.toLocaleString()+'</strong>':'🎉 Advance: <strong style="color:var(--accent2)">₹'+Math.abs(bal).toLocaleString()+'</strong>')+
+      '</div></div></div>';
+  }
+  sHTML+='</div>';
+  document.getElementById('payment-summary').innerHTML=sHTML;
+  var wrap=document.getElementById('payment-table-wrap');
+  if(!payments.length){wrap.innerHTML='<div class="empty"><div class="empty-icon">💳</div>No payments recorded.</div>';return;}
+  var rows='';
+  for(var m=0;m<payments.length;m++){
+    var p=payments[m];
+    rows+='<tr><td>'+p.date+'</td><td>'+compBadge(p.company)+'</td>'+
+      '<td><strong>₹'+p.amount.toLocaleString()+'</strong></td>'+
+      '<td><span class="badge '+(p.type==='advance'?'badge-boat2':'badge-boat1')+'">'+(p.type==='advance'?'Advance':'Payment')+'</span></td>'+
+      '<td>'+(p.note||'—')+'</td>'+
+      '<td><button class="btn btn-danger btn-sm" onclick="deletePayment('+p.id+')">🗑️</button></td></tr>';
+  }
+  wrap.innerHTML='<table><thead><tr><th>Date</th><th>Company</th><th>Amount</th><th>Type</th><th>Note</th><th>Del</th></tr></thead><tbody>'+rows+'</tbody></table>';
+}
+
+// ═══════════════════════════════════════════════
+// SYNC PAGE
+// ═══════════════════════════════════════════════
+var importedData = null;
+
+function renderSyncInfo() {
+  var trips=DB.getTrips(), payments=DB.getPayments();
+  var le=localStorage.getItem('tt_last_export')||'Never';
+  var ld=localStorage.getItem('tt_drive_last_save')||'Never';
+  document.getElementById('sync-info').innerHTML=
+    '<div class="info-green">📊 Trips: <strong>'+trips.length+'</strong> &nbsp;|&nbsp; '+
+    'Payments: <strong>'+payments.length+'</strong> &nbsp;|&nbsp; '+
+    '☁️ Drive save: <strong>'+ld+'</strong> &nbsp;|&nbsp; '+
+    '💾 Local export: <strong>'+le+'</strong></div>';
+  updateDriveUI();
+}
+
+function exportData() {
+  var obj={version:1,exportDate:new Date().toISOString(),device:navigator.userAgent.indexOf('Mobile')>-1?'Mobile':'Laptop',trips:DB.getTrips(),payments:DB.getPayments()};
+  var blob=new Blob([JSON.stringify(obj,null,2)],{type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url; a.download='tractor-trip-backup-'+new Date().toISOString().split('T')[0]+'.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+  localStorage.setItem('tt_last_export',new Date().toLocaleString());
+  renderSyncInfo(); toast('✅ Backup file downloaded!');
+}
+
+function exportCSV() {
+  var trips=DB.getTrips();
+  if(!trips.length){toast('⚠️ No trip data to export!');return;}
+  var csv='Date,Boat,Company,Trips,Rate,Amount\n';
+  trips.sort(function(a,b){return a.date.localeCompare(b.date);});
+  for(var i=0;i<trips.length;i++){var t=trips[i];csv+=t.date+',"'+t.boat+'","'+t.company+'",'+t.trips+','+(t.rate||0)+','+(t.amount||0)+'\n';}
+  var blob=new Blob([csv],{type:'text/csv'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url; a.download='tractor-trip-'+new Date().toISOString().split('T')[0]+'.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+  toast('📊 CSV downloaded! Open in Excel.');
+}
+
+function previewImport(event) {
+  var file=event.target.files[0]; if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var data=JSON.parse(e.target.result);
+      if(!data.trips||!data.payments){toast('⚠️ Invalid backup file!');return;}
+      importedData=data;
+      var eT={},eP={},ex=DB.getTrips(),exP=DB.getPayments();
+      for(var i=0;i<ex.length;i++) eT[ex[i].id]=true;
+      for(var j=0;j<exP.length;j++) eP[exP[j].id]=true;
+      var nT=data.trips.filter(function(t){return!eT[t.id];}).length;
+      var nP=data.payments.filter(function(p){return!eP[p.id];}).length;
+      var info=document.getElementById('merge-info');
+      info.style.display='block';
+      info.innerHTML='📂 <strong>'+file.name+'</strong><br>'+
+        '📅 '+(data.exportDate?new Date(data.exportDate).toLocaleString():'Unknown')+'<br>'+
+        '🆕 New trips: <strong>'+nT+'</strong> &nbsp; Payments: <strong>'+nP+'</strong><br>✅ Existing records kept safely';
+      document.getElementById('confirm-import-btn').style.display='block';
+      toast('📂 File ready — '+nT+' new trips to import');
+    }catch(err){toast('⚠️ Could not read file!');}
+  };
+  reader.readAsText(file);
+}
+
+function confirmImport() {
+  if(!importedData)return;
+  var ex=DB.getTrips(),exP=DB.getPayments(),eT={},eP={};
+  for(var i=0;i<ex.length;i++) eT[ex[i].id]=true;
+  for(var j=0;j<exP.length;j++) eP[exP[j].id]=true;
+  var nT=importedData.trips.filter(function(t){return!eT[t.id];});
+  var nP=importedData.payments.filter(function(p){return!eP[p.id];});
+  DB.saveTrips(ex.concat(nT)); DB.savePayments(exP.concat(nP));
+  importedData=null;
+  document.getElementById('merge-info').style.display='none';
+  document.getElementById('confirm-import-btn').style.display='none';
+  document.getElementById('import-file').value='';
+  renderSyncInfo();
+  toast('✅ Merged! +'+nT.length+' trips, +'+nP.length+' payments added!');
+}
+
+function replaceImport(event) {
+  var file=event.target.files[0]; if(!file)return;
+  if(!confirm('⚠️ This will DELETE all current data and replace with:\n"'+file.name+'"\n\nAre you sure?')){document.getElementById('replace-file').value='';return;}
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var data=JSON.parse(e.target.result);
+      if(!data.trips||!data.payments){toast('⚠️ Invalid file!');return;}
+      DB.saveTrips(data.trips); DB.savePayments(data.payments);
+      document.getElementById('replace-file').value='';
+      renderSyncInfo(); toast('✅ Replaced! '+data.trips.length+' trips loaded!');
+    }catch(err){toast('⚠️ Could not read file!');}
+  };
+  reader.readAsText(file);
+}
+
+function clearAllData() {
+  if(!confirm('⚠️ DELETE ALL DATA?\n\nThis cannot be undone!\nExport backup first!'))return;
+  if(!confirm('🔴 FINAL WARNING — continue?'))return;
+  localStorage.setItem('tt_trips','[]'); localStorage.setItem('tt_payments','[]');
+  renderSyncInfo(); renderTodayEntries(); toast('🗑️ All data cleared!');
+}
+</script>
+</body>
+</html>
